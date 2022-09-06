@@ -5,9 +5,10 @@
 int main()
 {
     khoiTao(9, 9, 10);
+    Cursor(false);//An con tro
     xuLySuKien();
     //std::cout << std::endl;
-    system("pause");
+    //system("pause");
     return 0;
 }
 

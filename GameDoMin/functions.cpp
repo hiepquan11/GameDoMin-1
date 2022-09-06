@@ -5,6 +5,12 @@
 CauTrucBang CTBang;
 CauTrucO **CTO;
 
+//Vi tri con tro hien tai
+COORD CViTriConTro;
+
+//Su dung phim
+bool BSuDungPhim = false; 
+
 void taoMang2ChieuDong() 
 {
 	CTO = new CauTrucO * [CTBang.SDong];
@@ -32,9 +38,9 @@ void khoiTao(short SDong, short SCot, short SSoBom)
 	CTBang.SSoCo = 0;
 
 	taoMang2ChieuDong();
-	//veBang();
-	taoBomNgauNhien();
-	xuatBom();
+	veBang();
+	//taoBomNgauNhien();
+	//xuatBom();
 
 	xoaMang2ChieuDong();
 }
@@ -91,7 +97,7 @@ void veO(short SX, short SY, short SKieu)
 		setColorBGTextXY(toaDoX(SX), toaDoY(SY), 0, 7, const_cast<char*> ("  "));
 		break;
 	case 12://Theo doi con tro
-		setColorBGTextXY(toaDoX(SX), toaDoY(SY), 0, 13, const_cast<char*> (" "));
+		setColorBGTextXY(toaDoX(SX) + 1, toaDoY(SY), 0, 13, const_cast<char*> (" "));
 		break;
 	case 13://Cam co
 		setColorBGTextXY(toaDoX(SX), toaDoY(SY), 12, 14, const_cast<char*> ("P "));
@@ -107,7 +113,7 @@ void veO(short SX, short SY, short SKieu)
 void veBang()
 {
 	for (int i = 0; i < CTBang.SDong; ++i)
-	{
+	{	
 		for (int j = 0; j < CTBang.SCot; ++j)
 		{
 			/*if (((i % 2) && (j % 2)) || !((i % 2) || (j % 2)))
@@ -119,10 +125,15 @@ void veBang()
 				veO(j, i, 11);
 			}*/
 			//Cach 2:
-			if ((i + j) % 2)//o le
+			if (CTO[i][j].BCamCo)
+				veO(j, i, 13);
+			else if ((i + j) % 2)//o le
 				veO(j, i, 11);
-			else
+			else//o chan
 				veO(j, i, 10);
+
+			if (BSuDungPhim)
+				veO(CViTriConTro.X, CViTriConTro.Y, 12);
 		}
 	}
 }
@@ -155,6 +166,24 @@ void xuatBom()
 	}
 }
 
+void clickPhai(short SX, short SY)//Cam co
+{
+	if (!CTO[SX][SY].BDaMo)
+	{
+		if (CTO[SX][SY].BCamCo)
+		{
+			CTO[SX][SY].BCamCo = false;
+			CTBang.SSoCo--;
+		}
+		else
+		{
+			CTO[SX][SY].BCamCo = true;
+			CTBang.SSoCo++;
+		}
+	}
+	veBang();
+}
+
 void xuLyPhim(KEY_EVENT_RECORD key)
 {
 	if (key.bKeyDown)//Co nham phim
@@ -162,22 +191,42 @@ void xuLyPhim(KEY_EVENT_RECORD key)
 		switch (key.wVirtualKeyCode)
 		{
 		case VK_UP://Mui ten len
+			//std::cout << "Len " << std::endl;
+			BSuDungPhim = true;
+			CViTriConTro.Y = ((CViTriConTro.Y == 0) ? CTBang.SDong - 1 : CViTriConTro.Y - 1);
+			veBang();
 			break;
 		case VK_DOWN://Mui ten xuong
+			//std::cout << "Xuong " << std::endl;
+			BSuDungPhim = true;
+			CViTriConTro.Y = ((CViTriConTro.Y == CTBang.SDong - 1) ? 0 : CViTriConTro.Y + 1);
+			veBang();
 			break;
 		case VK_LEFT://Mui ten trai
+			//std::cout << "Trai " << std::endl;
+			BSuDungPhim = true;
+			CViTriConTro.X = ((CViTriConTro.X == 0) ? CTBang.SCot - 1 : CViTriConTro.X - 1);
+			veBang();
 			break;
 		case VK_RIGHT://Mui ten phai
+			//std::cout << "Phai " << std::endl;
+			BSuDungPhim = true;
+			CViTriConTro.X = ((CViTriConTro.X == CTBang.SCot - 1) ? 0 : CViTriConTro.X + 1);
+			veBang();
 			break;
 		case VK_RETURN://Phim Enter
+			std::cout << "Enter " << std::endl;
 			break;
 		case VK_ESCAPE://Phim ESC(thoat)
-			break;
+			std::cout << "ESC " << std::endl;
+			break;	
 		case ClickTrai://Phim Z - Mo O
 			std::cout << "Z" << std::endl;
 			break;
 		case ClickPhai://Phim X - Cam co
-			std::cout << "X" << std::endl;
+			//std::cout << "X" << std::endl;
+			clickPhai(CViTriConTro.Y, CViTriConTro.X);
+			break;
 		}
 	}
 }
