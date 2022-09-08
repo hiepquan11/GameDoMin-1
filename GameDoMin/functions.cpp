@@ -39,10 +39,10 @@ void khoiTao(short SDong, short SCot, short SSoBom)
 
 	taoMang2ChieuDong();
 	veBang();
-	//taoBomNgauNhien();
+	taoBomNgauNhien();
 	//xuatBom();
 
-	xoaMang2ChieuDong();
+	//xoaMang2ChieuDong();
 }
 
 short toaDoX(short SX) //Toa do X ve bang
@@ -127,6 +127,10 @@ void veBang()
 			//Cach 2:
 			if (CTO[i][j].BCamCo)
 				veO(j, i, 13);
+			else if (CTO[i][j].SBomLanCan)
+				veO(j, i, CTO[i][j].SBomLanCan);
+			else if (CTO[i][j].BDaMo)
+				veO(j, i, 0);
 			else if ((i + j) % 2)//o le
 				veO(j, i, 11);
 			else//o chan
@@ -165,7 +169,53 @@ void xuatBom()
 		std::cout << std::endl;
 	}
 }
-
+short demBomLC(short x, short y) {
+	short dem = 0;
+	for (int i = x - 1; i <= x + 1; ++i) {
+		for (int j = y - 1; j <= y + 1; ++j) {
+			if (i < 0 || i >= CTBang.SDong || j < 0 || j >= CTBang.SCot || (i == x && j == y))
+				continue;
+			if (CTO[i][j].BCoBom)
+				++dem;
+		}
+	}
+	return dem;
+}
+void moO(short x, short y) {
+	if (!CTO[x][y].BDaMo && !CTO[x][y].BCamCo) {
+		CTO[x][y].BDaMo = true;
+		if (CTO[x][y].BCoBom) // o co bom
+			exit(0); //=> thua
+		else
+		{
+			CTBang.SSoODaMo++;
+			short BomLC = demBomLC(x, y);
+			if (BomLC) // co bom lan can
+				CTO[x][y].SBomLanCan = BomLC;
+			else // o rong
+			{
+				// Duyet cac o lan can va goi de quy
+				for (int i = x - 1; i <= x + 1; ++i)
+				{
+					for (int j = y - 1; j <= y + 1; ++j)
+					{
+						// xet nhung vi tri khong hop le=> tiep tuc lap
+						if (i < 0 || i >= CTBang.SDong || j < 0 || j >= CTBang.SCot || (i == x && j == y))
+							continue;
+						// goi de quy
+						moO(i, j);
+					}
+				}
+			}
+		}
+	}
+}
+void clickTrai(short x, short y) {
+	if (!CTO[x][y].BDaMo && !CTO[x][y].BCamCo) {
+		moO(x, y);
+		veBang();
+	}
+}
 void clickPhai(short SX, short SY)//Cam co
 {
 	if (!CTO[SX][SY].BDaMo)
@@ -221,7 +271,8 @@ void xuLyPhim(KEY_EVENT_RECORD key)
 			std::cout << "ESC " << std::endl;
 			break;	
 		case ClickTrai://Phim Z - Mo O
-			std::cout << "Z" << std::endl;
+			//std::cout << "Z" << std::endl;
+			clickTrai(CViTriConTro.Y, CViTriConTro.X);
 			break;
 		case ClickPhai://Phim X - Cam co
 			//std::cout << "X" << std::endl;
